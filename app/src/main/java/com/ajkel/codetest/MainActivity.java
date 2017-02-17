@@ -65,63 +65,18 @@ public class MainActivity extends AppCompatActivity {
             String result = "Save was successful!";
             Map<String, String> commentMap = (Map<String,String>) params[0];
 
-            //for a parse implementation(even though parse is no longer a valid service):
-                //ParseObject comment = new ParseObject(commentMap.get("classname"));
-                //assuming language level java 8, use lambda expression to traverse comment map and add all key value pairs to parse object map
-                //commentMap.forEach((k,v)->comment.put(k,v));
-                //If java language level 8 is not supported, use normal for each loop to the same effect
-                //for (Map.Entry<String, String> entry : commentMap.entrySet()) { comment.put(entry.getKey(),entry.getValue()); }
-                //comment.saveInBackground();
+            //set the type of remote store you want to use
+            String remoteStoreType = getString(R.string.remote_store_type);
 
+            //create save manager using the type of remote store connection set above and save the comment
+            //alternatively you could send a new instance of the type of RemoteStoreStrategy you wish to use to save the class
+            SaveManager sm  = new SaveManager(remoteStoreType);
+            sm.addObjectMap(commentMap);
+            if(!sm.save()){
+                //this is the expected output as no actual webservice is being called
+                result = "save was not successful";
+            }
 
-            //for a RESTful webservice implementation using HttpURLConnection Request:
-                //Assuming the path to the webservice is known ahead of time and not dynamic, there should be no need for modifying the async declaration
-                String url = getString(R.string.storage_path);
-                HttpURLConnection connection = null;
-                try {
-                    connection = (HttpURLConnection) ((new URL(url).openConnection()));
-                    //convert comment map data into JSON object
-                    JSONObject json = new JSONObject(commentMap);
-                    String data = json.toString();
-                    //set connect for POST properties and connect
-                    connection.setDoOutput(true);
-                    connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setRequestProperty("Accept", "application/json");
-                    connection.setRequestMethod("POST");
-                    connection.connect();
-
-                    //Write post data(comment data to save) to the service
-                    OutputStream os = connection.getOutputStream();
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                    writer.write(data);
-                    writer.close();
-                    os.close();
-
-                    //Read the response, if error occurred while processing request, getInputStream() will throw an IOExpection
-                    //so it is safe to assume that if no exception is thrown the response status was 200
-                    BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"UTF-8"));
-
-                    String line;
-                    StringBuilder sb = new StringBuilder();
-
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
-                    }
-
-                    br.close();
-                    //if you would want to display the response set the result = sb.toString()
-                    //but in this case we just want to tell the user the save was successful
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    //change the result to unsuccessful if any exceptions were thrown(this is expected in this implementation)
-                    result = "Save was not successful";
-                }
-                finally {
-                    //after the response has been processed or exception has been thrown terminate the connection
-                    connection.disconnect();
-                }
             return result;
         }
 

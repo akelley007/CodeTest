@@ -2,5 +2,5 @@
     <string name="app_name">CodeTest</string>
     <string name="comment_label">Comment:</string>
     <string name="comment_hint">Enter comment here...</string>
-    <string name="storage_path">http://some/arbitrary/endpoint/path</string>
+    <string name="remote_store_type">httpUrlConn</string>
 </resources>
